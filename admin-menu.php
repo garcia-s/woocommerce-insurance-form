@@ -25,8 +25,8 @@ function editable_pdf_metabox_content($post)
     $args = array(
         'post_type'      => 'attachment',
         'post_status'    => 'inherit',
-        'posts_per_page' => -6,  // Retrieve all attachments
-        'post_mime_type' => 'application/pdf', // Replace with your desired MIME type
+        'posts_per_page' => -6,
+        'post_mime_type' => 'application/pdf',
     );
 
     $query = new WP_Query($args);
@@ -35,9 +35,6 @@ function editable_pdf_metabox_content($post)
     <select name="editable_pdf" id="editable_pdf">
         <option value="">Select PDF</option>
         <?php
-        // Get a list of PDF files from a directory or any other source
-        // For demonstration, let's assume you have an array of PDF
-
 
         while ($query->have_posts()) {
             $query->the_post();
@@ -48,7 +45,7 @@ function editable_pdf_metabox_content($post)
 <?php
 }
 
-// Save selected PDF when the product is saved or updated
+
 function editable_pdf_save_product_meta($post_id)
 {
     if (isset($_POST['editable_pdf'])) {
