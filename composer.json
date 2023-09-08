@@ -1,22 +1,22 @@
 {
-    "name": "symmetry/insurance-form",
-    "description": "Custom WordPress form for an insurance company",
-    "type": "wordpress-plugin",
-    "require-dev": {
-        "phpunit/phpunit": "^10.3"
-    },
-    "license": "GNU v3.0",
-    "autoload": {
-        "psr-4": {
-            "Symmetry\\InsuranceForm\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Juan Garcia",
-            "email": "garciajj18@gmail.com"
-        }
-    ],
-    "minimum-stability": "stable",
-    "require": {}
+  "name": "symmetry/insurance-form",
+  "description": "Custom WordPress form for an insurance company",
+  "type": "wordpress-plugin",
+  "require-dev": {
+    "phpunit/phpunit": "^10.3"
+  },
+  "license": "GNU v3.0",
+  "autoload": {
+    "psr-4": {
+      "Symmetry\\InsuranceForm\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Juan Garcia",
+      "email": "garciajj18@gmail.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "require": {}
 }
