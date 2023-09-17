@@ -41,14 +41,9 @@ class WorkplaceViolenceRequest
         int $sic_code,
         int $employee_count,
         int $effective_year,
-        $wv_class,
-        $wv_hazard_factor,
-        $wv_risk_margin,
-        $wv_limit_factor,
-        $wv_base_premium,
     ) {
-
-
+        require('./wv_data.php');
+        
         $this->wv_class = &$wv_class;
         $this->wv_hazard_factor = &$wv_hazard_factor;
         $this->wv_risk_margin = &$wv_risk_margin;
@@ -63,18 +58,11 @@ class WorkplaceViolenceRequest
 
     public static function new(int $limit, int $sic_code, int $employee_count, int $effective_year): WorkPlaceViolenceRequest|IWorkplaceViolenceFailure
     {
-        require('./wv_data.php');
-
         return new WorkPlaceViolenceRequest(
             $limit,
             $sic_code,
             $employee_count,
             $effective_year,
-            $wv_class,
-            $wv_hazard_factor,
-            $wv_risk_margin,
-            $wv_limit_factor,
-            $wv_base_premium,
         );
     }
 

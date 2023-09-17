@@ -40,18 +40,17 @@ $wv_limit_factor = [
  * Key is the total_employees, and value is the base premium 
  */
 $wv_base_premium = [
-    50 => 5399,
-    70 => 6919,
-    100 => 8299,
-    150 => 10049,
-    200 => 11499,
-    250 => 12899,
-    350 => 14699,
-    500 => 16949,
-    750 => 19199,
-    751 => 7,
+    ["max" => 50, "premium" => 5399],
+    ["max" => 70, "premium" => 6919],
+    ["max" => 100, "premium" => 8299],
+    ["max" => 150, "premium" => 10049],
+    ["max" => 200, "premium" => 11499],
+    ["max" => 250, "premium" => 12899],
+    ["max" => 350, "premium" => 14699],
+    ["max" => 500, "premium" => 16949],
+    ["max" => 750, "premium" => 19199],
+    ["max" => 751, "premium" => 7,]
 ];
-
 
 /** 
  * @var array<int, array<string, mixed>> $wv_cass
