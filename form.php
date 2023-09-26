@@ -1,76 +1,51 @@
 <?php
+
+
+add_shortcode('insurance_form_shortcode', 'insurance_form_function');
+
+
+function insurance_form_function()
+{
+    wp_enqueue_script('insurance_script', INSURANCE_URL . 'assets/js/insurance-form.js', array('jquery'), '1.0', true);
+    wp_enqueue_style('insurance_styles', INSURANCE_URL . 'assets/css/insurance-form.css', array(), '1.0', 'all');
+    return renderForm();
+}
+
+
+
 function renderForm()
 {
     ob_start();
-?>
-    <div id="insurance_form_wrapper">
-        <div class="insurance_form_spinner">
-        </div>
-        <div class='insurance_form_steps_wrapper'>
-            <div> 
-                <div class="step_indicator indicator_selected"></div>
-                <div class="step_indicator"></div>
-                <div class="step_indicator"></div>
-            </div>
-        </div>
+?> <div class="insurance_form_wrapper">
         <form id="insurance_form">
-
-            <div class="form_step">
-                <label>CONTACT NAME</label>
-                <input name="contactName" type="text" />
-
-                <label>PHONE</label>
-                <input name="phone" type="phone" />
-
-                <label>FAX (A/C, No)</label>
-                <input name="fax" type="phone"/>
-                <div class="insurance_btn_wrapper">
-                    <button>
-                        Next
-                    </button>
-                </div>
+            <div class="contact_information_section">
+                <h4>Contact Information</h4>
+                <div class='insurance_error' id="contact_name_error"></div>
+                <label>Contact Name </label><input type="text" name="contact_name" />
+                <div class='insurance_error' id="contact_number_error"></div>
+                <label>Phone</label><input type="text" name="contact_number" />
+                <div class='insurance_error' id="contact_email_error"></div>
+                <label>Email</label><input type="text" name="contact_email" />
+                <div class='insurance_error' id="fax_error"></div>
+                <label>Fax</label><input type="text" name="fax" />
             </div>
-
-            <div class="form_step">
-                <label></label>
-                <input type="text" />
-
-                <label></label>
-                <input type="text" />
-
-                <label></label>
-                <input type="text" />
-                <div class="insurance_btn_wrapper">
-                    <button>
-                        Previous
-                    </button>
-                    <button>
-                        Next
-                    </button>
-                </div>
+            <div class="insurance_type_section">
+                <h5>Select an insurance type</h4>
+                    <div><input type="radio" name="insurance_type" value="loss_of_key_person" /><label>Loss of key person</label></div>
+                    <div><input type="radio" name="insurance_type" value="workplace_violence" /><label>Workplace Violence</label></div>
+                    <div><input type="radio" name="insurance_type" value="cyber" /><label>Cyber</label></div>
             </div>
-
-            <div class="form_step">
-                <label></label>
-                <input type="text" />
-
-                <label></label>
-                <input type="text" />
-
-                <label></label>
-                <input type="text" />
-
-                <div class="insurance_btn_wrapper">
-                    <button>
-                        Previous
-                    </button>
-                    <button>
-                        Send
-                    </button>
-                </div>
+            <div id="insurance_info">
+                <?php
+                load_loss_of_key_person_form();
+                load_workplace_violence_form();
+                ?>
             </div>
+            <button>Next</button>
         </form>
     </div>
 <?php
     return ob_get_clean();
 }
+
+

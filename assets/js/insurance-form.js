@@ -1,32 +1,40 @@
-const form = document.getElementById("insurance_form");
-const slides = document.getElementsByClassName("form_step");
-const indicators = document.getElementsByClassName("step_indicator");
-let currentStep = 0;
 
-form.onsubmit = (e) => {
-  e.preventDefault();
-  changeStep(1);
-};
+(() => {
+    const form = document.getElementById("insurance_form");
+    const inputs = form.querySelectorAll("input")
+    const formData = {}
 
-function changeStep(direction) {
-  console.log("Here");
-  newStep = currentStep + direction;
-  console.log(slides);
-  if (newStep < 0 || newStep > slides.length - 1) return;
-  currentStep = newStep;
 
-  for (let i = 0; i < slides.length; i++) {
-    let position = (
-      ((currentStep + slides.length) % (slides.length + i)) *
-      100
-    ).toString();
-    console.log(position);
-    /*     slides[i].style.left =  position + '%'; */
-  }
-}
+    for (let i = 0; i < inputs.length; i++) {
+        inputs[i].onchange = (e) => {
+            formData[e.target.name] = e.target.value;
+        }
+    }
 
-// 0   0  1  2
-// 1  -1  0  1
-// 2  -2 -1  1
-//
-// length + current % length -i)
+    var radios = document.querySelectorAll('input[type=radio][name="insurance_type"]');
+
+    function insuranceTypeHandler(event) {
+        const sections = document.getElementsByClassName("insurance_options");
+        for (let i = 0; i < sections.length; i++) {
+            sections[i].style.display = "none";
+        }
+        const section = document.getElementById(this.value);
+        section.style.display = "flex";
+    }
+
+    Array.prototype.forEach.call(radios, function(radio) {
+        radio.addEventListener('change', insuranceTypeHandler);
+    });
+
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        var baseUrl = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ":" + window.location.port : "");
+        const response = await fetch(baseUrl + '/wp-json/insurance/v1/submit', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData)
+        });
+        const json = await response.json();
+        console.log(json)
+    }
+})()

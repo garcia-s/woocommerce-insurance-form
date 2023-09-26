@@ -2,17 +2,23 @@
 require(WC_INSURANCE_DIR . '/loss_of_key_person/limits_and_risk.php');
 function load_loss_of_key_person_form()
 {
-    global $limit_and_risk;
-    echo '<div id="insurance-form">';
-    echo '<label>Limit: </label>';
-    echo '<select name="limit">';
-    echo '<option value=""> Select a limit</option>';
-    foreach ($limit_and_risk as $limit => $risk) {
-        echo '<option value=' . $limit . '>' . $limit . '</option>';
-    }
 
-    echo "</select>";
-    echo '</div>';
+    global $limit_and_risk;
+?>
+    <div id="loss_of_key_person" class="insurance_options">
+        <label>Limit: </label>
+        <select name="limit">
+            <option value=""> Select a limit</option>
+            <?php
+            foreach ($limit_and_risk as $limit => $risk) {
+                echo '<option value=' . $limit . '>' . $limit . '</option>';
+            }
+
+            ?>
+
+        </select>
+    </div>
+<?php
 }
 
 

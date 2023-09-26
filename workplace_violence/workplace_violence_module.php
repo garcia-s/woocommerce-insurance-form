@@ -8,26 +8,29 @@ function load_workplace_violence_form()
 {
 
     global $wv_risk_margin;
-    global $wv_class; 
-
-    echo '<div id="insurance-form">';
-    echo '<label>Limit: </label>';
-    echo '<select name="limit">';
-    echo '<option value=""> Select a limit</option>';
-    foreach ($wv_risk_margin as $limit => $risk) {
-        echo '<option value=' . $limit . '>' . $limit . '</option>';
-    }
-    echo "</select>";
-    echo '<label>SIC CLASS: </label>';
-    echo '<select name="sic_class">';
-    echo '<option value=""> Select a limit</option>';
-    foreach ($wv_class as $id => $data) {
-        echo '<option value=' . $id . '>' . $data['industry_title'] . '</option>';
-    }
-    echo "</select>";
-    echo '<label>Effective Date: </label>';
-    echo '<input type="date" name="effective_year/>';
-    echo '<label>Total employees: </label>';
-    echo '<input type="number" name="employee_count"/>';
-    echo '</div>';
+    global $wv_class;
+?>
+    <div id="workplace_violence" class="insurance_options">
+        <label>Limit: </label>
+        <select name="limit">
+            <option value=""> Select a limit</option>
+            <?php
+            foreach ($wv_risk_margin as $limit => $risk) {
+                echo '<option value=' . $limit . '>' . $limit . '</option>';
+            } ?>
+        </select>
+        <label>SIC CLASS: </label>
+        <select name="sic_class">
+            <option value=""> Select a limit</option>
+            <?php
+            foreach ($wv_class as $id => $data) {
+                echo '<option value=' . $id . '>' . $data['industry_title'] . '</option>';
+            } ?>
+        </select>
+        <label>Effective Date: </label>
+        <input type="date" name="effective_year" />
+        <label>Total employees: </label>
+        <input type=" number" name="employee_count" />
+    </div>
+<?php
 }

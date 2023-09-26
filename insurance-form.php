@@ -19,7 +19,7 @@ define("LOSS_OF_KEY_PERSON", 'loss_of_key_person');
 define("WORKPLACE_VIOLENCE", 'workplace_violence');
 define("CYBER", 'cyber');
 
-
+require_once(WC_INSURANCE_DIR . 'api.php');
 require_once(WC_INSURANCE_DIR . 'helpers.php');
 require_once(WC_INSURANCE_DIR . 'backend.php');
 require_once(WC_INSURANCE_DIR . './loss_of_key_person/loss_of_key_person_module.php');
@@ -27,46 +27,55 @@ require_once(WC_INSURANCE_DIR . './workplace_violence/workplace_violence_module.
 require_once(WC_INSURANCE_DIR . './cyber/cyber_module.php');
 require_once(WC_INSURANCE_DIR . './form.php');
 
-function insurance_form_function()
-{
-    wp_enqueue_script('insurance_script', INSURANCE_URL . 'assets/js/insurance-form.js', array('jquery'), '1.0', true);
-    wp_enqueue_style('insurance_styles', INSURANCE_URL . 'assets/css/insurance-form.css', array(), '1.0', 'all');
-    return renderForm();
-}
 
-function register_insurance_endpoint()
+
+register_activation_hook(__FILE__, 'create_invisible_products_on_activation');
+register_deactivation_hook(__FILE__, 'remove_products_on_deactivation');
+
+function my_custom_purchaseable_check($is_purchasable, $product) {
+    // Modify the $is_purchasable variable as needed
+    return true;
+}
+add_filter('woocommerce_is_purchasable', 'my_custom_purchaseable_check', 10, 2);
+
+function create_invisible_products_on_activation()
 {
-    register_rest_route('insurance/v1', '/get_premium', array(
-        'methods' => 'POST',
-        'callback' => 'get_premium_callback',
-        'permission_callback' => '__return true'
+    // Check if the products already exist
+    $existing_products = get_posts(array(
+        'post_type' => 'product',
+        'post_status' => 'private',
+        'post_title' => 'Insurance Coverage',
+        'posts_per_page' => -1,
     ));
 
-    register_rest_route('insurance/v1', '/submit', array(
-        'methods' => 'POST',
-        'callback' => 'process_insurance_request_callback',
-        'permission_callback' => '__return true'
+    // If no products exist, create them as drafts
+    if (empty($existing_products)) {
+        $product_data = array(
+            'post_title' => 'Insurance Coverage',
+            'post_content' => 'content',
+            'post_status' => 'private',
+            'post_type' => 'product',
+            'post_author' => 2,
+        );
+        $product_id = wp_insert_post($product_data);
+
+        // Add product meta data like price, SKU, etc.
+        // update_post_meta($product_id, '_price', 20.99);
+        update_post_meta($product_id, '_sku', 'insurance-product-sku');
+        // Add more product meta data as needed
+    }
+}
+
+function remove_products_on_deactivation()
+{
+    $existing_products = get_posts(array(
+        'post_title' => 'Insurance Coverage',
+        'post_type' => 'product',
+        'post_status' => 'private',
+        'posts_per_page' => 0,
     ));
 
-    register_rest_route('insurance/v1', '/generate_pdf', array(
-        'methods' => 'POST',
-        'callback' => 'generate_pdf_callback',
-        'permission_callback' => '__return true'
-    ));
+    foreach ($existing_products as $product) {
+        wp_delete_post($product->ID, true);
+    }
 }
-
-function generate_pdf_callback()
-{
-}
-
-function get_premium_callback()
-{
-}
-
-
-function process_insurance_request_callback()
-{
-}
-
-add_shortcode('insurance_form_shortcode', 'insurance_form_function');
-add_action('rest_api_init', 'register_insurance_endpoint');
