@@ -16,7 +16,8 @@ function insurance_form_function()
 function renderForm()
 {
     ob_start();
-?> <div class="insurance_form_wrapper">
+?>
+    <div class="insurance_form_wrapper">
         <form id="insurance_form">
             <div class="contact_information_section">
                 <h4>Contact Information</h4>
@@ -37,8 +38,8 @@ function renderForm()
             </div>
             <div id="insurance_info">
                 <?php
-                load_loss_of_key_person_form();
-                load_workplace_violence_form();
+                //               load_loss_of_key_person_form();
+                //               load_workplace_violence_form();
                 ?>
             </div>
             <button>Next</button>
@@ -47,5 +48,3 @@ function renderForm()
 <?php
     return ob_get_clean();
 }
-
-
