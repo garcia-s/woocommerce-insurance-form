@@ -10,7 +10,7 @@ function load_workplace_violence_form()
     global $wv_risk_margin;
     global $wv_class;
 ?>
-    <div id="workplace_violence" class="insurance_options">
+    <div class="insurance_options">
         <label>Limit: </label>
         <select name="limit">
             <option value=""> Select a limit</option>

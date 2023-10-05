@@ -18,5 +18,7 @@
     }
   ],
   "minimum-stability": "stable",
-  "require": {}
+  "require": {
+    "tecnickcom/tcpdf": "^6.6"
+  }
 }

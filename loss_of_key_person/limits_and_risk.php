@@ -1,5 +1,5 @@
 <?php
-$limit_and_risk = [
+$limits_and_risk = [
     25000 => 1.05,
     50000 => 1.08,
     100000 => 1.10,

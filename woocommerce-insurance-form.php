@@ -22,8 +22,15 @@ define("CYBER", 'cyber');
 
 require_once(WC_INSURANCE_DIR . 'helpers.php');
 require_once(WC_INSURANCE_DIR . 'autoload.php');
-require_once(WC_INSURANCE_DIR . 'api.php');
-require_once(WC_INSURANCE_DIR . './form.php');
+
+
+$instance = WC_Insurance::get();
+
+
+$instance->register_entry(new WC_Insurance_Loss_Of_Key_Person());
+$instance->register_entry(new WC_Insurance_Workplace_Violence());
+
+$instance2 = WC_Insurance::get();
 
 
 
