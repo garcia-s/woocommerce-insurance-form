@@ -2,6 +2,8 @@
 
 abstract class IWC_Insurance_Entry
 {
+    protected float $premium;
+
     abstract function get_name(): string;
     abstract function get_slug(): string;
 
@@ -10,10 +12,26 @@ abstract class IWC_Insurance_Entry
      * @param array<string,any> $data 
      * @return array<string,string> An associative array where both keys and values are strings.
      */
-    abstract function validate(&$data);
+    abstract function validate($data);
+
+
+    /**
+     * Renders the form needed for the extended class 
+     */
     abstract function renderForm();
-    abstract function calculatePremium(&$data);
+
+    /**
+     * Calculates the premium and saves it to the $premium attribute;
+     * @param array<string,any> $data
+     */
+    abstract function calculatePremium($data);
 
 
-    abstract function get_premium(): float;
+    /**
+     * Returns the value of the $premium
+     */
+    function get_premium(): float
+    {
+        return $this->premium ?? 0;
+    }
 }

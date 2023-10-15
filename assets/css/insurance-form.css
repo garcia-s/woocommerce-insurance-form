@@ -14,16 +14,42 @@
   padding: 1rem;
   font-size: 1.2rem;
   font-weight: 600;
+  border: none;
+  flex: 1;
 }
 
-#insurance_loader {
+#insurance_content_wrapper .back {
+    background-color: #fe97a7;
+    color: #6e6e6e;
+    transition: all ease-in 0.2s;
+}
+
+#insurance_content_wrapper .back:hover {
+    background-color: #ff6262;
+    color: #323232;
+    transition: all ease-out 0.5s;
+}
+
+#insurance_content_wrapper .send {
+  background-color: #b2e7b2;
+  color: #6e6e6e;
+  transition: all ease-in 0.2s;
+}
+
+#insurance_content_wrapper .send:hover {
+  background-color: #69f969;
+  color: #323232;
+  transition: all ease-out 0.5s;
+}
+
+#insurance_content_wrapper #insurance_loader {
   display: block;
   display: none;
   width: 32px;
   height: 32px;
   position: relative;
   border-radius: 50%;
-  color: #ff3d00;
+  color: #419de5;
   animation: fill 1s ease-in infinite alternate;
 }
 
@@ -67,7 +93,7 @@
 
 #insurance_form input,
 #insurance_form select {
-  height: 3.5rem;
+  height: 3rem;
   width: 100%;
   display: flex;
   outline: none;
@@ -75,7 +101,7 @@
   border-radius: 0.4em;
   box-sizing: border-box;
   background-color: transparent;
-  margin-bottom: 1em;
+  margin-bottom: 0.7em;
   padding-left: 1em;
 }
 
@@ -86,8 +112,8 @@
 }
 
 #insurance_form input[type="radio"] {
-  width: 2em;
-  height: 2em;
+  width: 1.6em;
+  height: 1.6em;
 }
 
 .insurance_type_section {
@@ -101,7 +127,7 @@
 }
 
 #insurance_section_wrapper {
-  padding: 2em 0;
+  padding: 1.2em 0;
 }
 
 .contact_information_section {
@@ -114,20 +140,31 @@
 }
 
 #insurance_preview_wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+#insurance_completed {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 #insurance_content_wrapper > * {
   display: none;
 }
 
-
 #insurance_preview_wrapper > div {
   padding: 20px;
+}
+
+.preview_button_wrapper {
+  display: flex;
+  flex-direction: row;
 }
 #insurance_preview_frame {
   flex: 1;
@@ -135,6 +172,12 @@
   border: 2px solid #c7c7c7;
   border-radius: 0.4em;
 }
+
 .show {
   display: inherit !important;
+}
+
+.error {
+  color: red;
+  font-size: 0.8em;
 }
