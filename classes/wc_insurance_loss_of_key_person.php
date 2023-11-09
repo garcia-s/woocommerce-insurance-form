@@ -46,31 +46,76 @@ class WC_Insurance_Loss_Of_Key_Person extends IWC_Insurance_Entry
 
         <div id="covered_employees" class="error"></div>
         <input type="number" name="covered_employees" />
-<?php
+    <?php
     }
-    /**@param array<string,any> $data
+    /**@param array<string,any> $this->data
      * @returns array<string,string>
      **/
-    function validate($data)
+    function validate()
     {
         $errors = [];
-        if (is_null($data["limit"]) || $this->limits_and_risk[intval($data["limit"])] == null)
+        if ($this->data["limit"] == null || $this->limits_and_risk[intval($this->data["limit"])] == null)
             $errors["limit"] = "Invalid limit provided";
 
-        if (is_null($data["covered_employees"]) || intval($data["covered_employees"]) < 1)
+        if ($this->data["covered_employees"] == null  || intval($this->data["covered_employees"]) < 1)
             $errors["covered_employees"] = "Invalid employee count";
 
         return $errors;
     }
 
-    function calculatePremium($data)
+    function calculatePremium()
     {
         // Get risk_margin
-        $risk_margin = $this->limits_and_risk[intval($data["limit"])];
+        $risk_margin = $this->limits_and_risk[intval($this->data["limit"])];
         // Calculate Expected losses
-        $expected_losses = intval($data["covered_employees"]) * 0.01 * intval($data["limit"]);
+        $expected_losses = intval($this->data["covered_employees"]) * 0.01 * intval($this->data["limit"]);
         // Return expected loss with risk management
         $losses_with_risk = $expected_losses * $risk_margin;
         $this->premium = round($losses_with_risk / (1 - WC_Insurance::get_variable_expense_percentage()));
+    }
+
+    function renderHTMLTable()
+    {
+    ?>
+
+        <table style="margin:10px">
+            <tbody>
+                <tr>
+
+                    <td align="LEFT">
+                        <strong>TYPE OF INSURACE</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->get_name() ?>
+                    </td>
+                </tr>
+                <tr>
+
+                    <td align="LEFT">
+                        <strong>LIMIT</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->data["limit"] . ' $' ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="LEFT">
+                        <strong>COVERED EMPLOYEES:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->data["covered_employees"] . " Employees" ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="LEFT">
+                        <strong>PREMIUM:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->premium . " $" ?>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+<?php
     }
 }

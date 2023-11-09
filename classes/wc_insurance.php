@@ -12,13 +12,14 @@ class WC_Insurance
     private function __construct()
     {
         new WC_Insurance_Api($this);
-
         add_filter('woocommerce_get_cart_item_from_session', array($this, 'custom_get_cart_item_from_session'), 10, 3);
         add_shortcode('insurance_form_shortcode', array($this, 'create_shortcode'));
         add_filter('woocommerce_data_stores', array($this, 'set_insurance_data_store'));
         add_filter("woocommerce_product_class", array($this, "add_woocommerce_class_for_product"), 10, 2);
         add_filter("woocommerce_product_type_query", array($this, "change_product_type"), 10, 2);
         add_action('wp_loaded', array($this, 'conditionally_load_cart'), 5);
+        add_action('woocommerce_new_order', array($this, 'custom_insert_data_into_order'), 10, 1);
+        add_filter("woocommerce_order_item_get_formatted_meta_data", array($this, "unset_specific_order_item_meta_data"), 10, 2);
     }
 
     public static function get(): WC_Insurance
@@ -67,11 +68,9 @@ class WC_Insurance
         return null;
     }
 
-
-
-
     public function create_shortcode()
     {
+
         wp_enqueue_script('insurance_script', INSURANCE_URL . 'assets/js/insurance-form.js', array('jquery'), '1.0', true);
         wp_enqueue_style('insurance_styles', INSURANCE_URL . 'assets/css/insurance-form.css', array(), '1.0', 'all');
         ob_start();
@@ -81,25 +80,32 @@ class WC_Insurance
             <form id="insurance_form">
                 <div class="contact_information_section">
                     <h5>CONTACT INFORMATION</h5>
-                    <div class='insurance_error' id="contact_name_error"></div>
                     <label>Contact Name </label>
                     <div id="contact_name" class="error"></div>
                     <input placeholder="ie. John Doe" type="text" name="contact_name" />
-                    <div class='insurance_error' id="contact_number_error"></div>
                     <label>Phone</label>
                     <div id="contact_phone" class="error"></div>
-                    <input type="tel" placeholder="(800) 555‑0175" name="contact_phone" pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}" />
-                    <div class='insurance_error' id="contact_email_error"></div>
+                    <input type="tel" placeholder="800-5550175" name="contact_phone" pattern="[0-9]{3}-[0-9]{7}" />
                     <label>Email</label>
                     <div id="contact_email" class="error"></div>
                     <input placeholder="ie. johndoe@example.com" type="email" name="contact_email" />
-                    <div class='insurance_error' id="fax_error"></div>
-                    <label>Fax</label>
-                    <div id="fax" class="error"></div>
-                    <input placeholder="(800) 555‑0175" type="tel" name="fax" pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}" />
+                </div>
+                <div class="contact_information_section">
+                    <h5>BUSINESS INFORMATION</h5>
+                    <label>NAICS Class</label>
+                    <div id="naics_list" class="error"></div>
+                    <select name="naics_list" \>
+                        <option> Select an NAICS class</option>
+                        <?
+                        global $naics_list;
+                        foreach ($naics_list as $key => $value ) {
+                            echo '<option value=' .$key . '>' . $value . '</option>';
+                        } ?>
+                    </select>
                 </div>
                 <div class=" insurance_type_section">
                     <h5>INSURANCE TYPE</h5>
+                    <div id="insurance_type" class="error"></div>
                     <?php
                     foreach ($this->insurance_entries as $id => $entry) {
                         echo "<div><input type='radio' name='insurance_type' value='{$entry->get_slug()}' /><label>{$entry->get_name()}</label></div>";
@@ -118,19 +124,23 @@ class WC_Insurance
                 <button class="send">NEXT</button>
             </form>
             <div id="insurance_preview_wrapper">
-                <iframe id="insurance_preview_frame"></iframe>
+
+                <div class="insurance_preview_text">The Premium for your insurance is</div>
+                <div id="insurance_preview_amount"></div>
                 <div class="preview_button_wrapper">
                     <button id="go_back" class="back">
                         Go back
                     </button>
                     <button id="send_insurance" class="send">
-                        Add to cart
+                        Add to Cart
                     </button>
                 </div>
             </div>
             <div id="insurance_completed">
                 <img src="<?php echo (INSURANCE_URL . "./assets/icons/checkmark.svg"); ?>" </div>
-                <a href="<?php echo (wc_get_cart_url()); ?>">Go to Payments</a>
+                <p> Your insurance policy has been added to the cart, you can now <a href="<?php echo get_permalink() ?>">click here to buy another policy</a> or
+                    <a href="/">click here to return to the home page</a>
+                </p>
             </div>
     <?php
 
@@ -176,7 +186,7 @@ class WC_Insurance
             require_once WC_ABSPATH . 'includes/wc-notice-functions.php';
 
             if (null === WC()->session) {
-                $session_class = apply_filters('woocommerce_session_handler', 'WC_Session_Handler'); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+                $session_class = apply_filters('woocommerce_session_handler', 'WC_Session_Handler');
 
                 // Prefix session class with global namespace if not already namespaced
                 if (false === strpos($session_class, '\\')) {
@@ -197,7 +207,7 @@ class WC_Insurance
                 add_action('shutdown', array(WC()->customer, 'save'), 10);
             }
 
-            if (null === WC()->cart) {
+            if (WC()->cart == null) {
                 WC()->cart = new WC_Cart();
             }
         }
@@ -205,11 +215,15 @@ class WC_Insurance
 
     function custom_get_cart_item_from_session($session_data, $value, $key)
     {
+
+        if ($session_data["data"]->get_type() !== "insurance") {
+            return $session_data;
+        }
         $entry = $this->get_by_id($session_data['product_id']);
-
         if ($entry == null)
-            return null;
+            return nulladd_action('woocommerce_new_order', 'custom_insert_data_into_order', 10, 1);;
 
+        $entry->set_data($session_data["insurance-data"]);
         if (!empty($entry->validate($session_data)))
             return null;
 
@@ -217,5 +231,43 @@ class WC_Insurance
         $product = $session_data["data"];
         $product->set_price($entry->get_premium());
         return $session_data;
+    }
+
+
+    function custom_insert_data_into_order($order_id)
+    {
+        // Get the order object
+        $order = wc_get_order($order_id);
+
+        // Loop through the cart items
+        foreach (WC()->cart->get_cart() as $cart_item) {
+
+            // You can access cart item data
+            $product_id = $cart_item['product_id'];
+
+            // Add the custom data to the order item
+            $product = wc_get_product($product_id);
+            $item = $order->add_product($product, $cart_item['quantity']);
+            if ($cart_item["insurance-data"] != null) {
+                wc_add_order_item_meta($item, "insurance-data", json_encode($cart_item["insurance-data"]), false);
+            }
+        }
+
+        // Calculate order totals (if needed)
+        $order->calculate_totals();
+
+        // Save the order
+        $order->save();
+    }
+
+
+
+    function unset_specific_order_item_meta_data($formatted_meta, $item)
+    {
+        foreach ($formatted_meta as $key => $meta) {
+            if ($meta->key == "insurance-data")
+                unset($formatted_meta[$key]);
+        }
+        return $formatted_meta;
     }
 }

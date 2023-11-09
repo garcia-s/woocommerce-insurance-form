@@ -2,7 +2,7 @@
 (() => {
     let loader = document.getElementById("insurance_loader");
     let form = document.getElementById("insurance_form");
-    let previewIframe = document.getElementById("insurance_preview_frame")
+    let previewAmount = document.getElementById("insurance_preview_amount")
     let preview = document.getElementById("insurance_preview_wrapper")
     let baseUrl = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ":" + window.location.port : "");
     const send = document.getElementById("send_insurance");
@@ -35,7 +35,7 @@
         form.classList.remove("show")
 
         const inputs = form.elements
-        console.log(inputs)
+
         const formData = {}
 
         for (let i = 0; i < inputs.length; i++) {
@@ -44,16 +44,15 @@
             formData[inputs[i].name] = inputs[i].value;
         }
 
-        const response = await fetch(baseUrl + '/wp-json/insurance/v1/get-pdf-preview', {
+        const response = await fetch(baseUrl + '/wp-json/insurance/v1/get-premium', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(formData)
         });
 
+        json = await response.json();
         if (response.status != 200) {
-            json = await response.json();
-            Object.keys(json).forEach((key) => {
-                console.log(key)
+            Object.keys(json).forEach((key) => { 
                 document.getElementById(key).innerHTML = json[key];
             })
             setTimeout(() => {
@@ -62,8 +61,7 @@
             }, 200)
             return
         }
-
-        const blob = await response.blob()
+        // Add the premium to the table and show it  
         back.onclick = () => {
             preview.classList.remove("show");
             form.classList.add("show");
@@ -88,7 +86,9 @@
 
             }
         }
-        previewIframe.src = URL.createObjectURL(blob);
+
+        previewAmount.innerHTML = "$" + json.premium 
+
         setTimeout(() => {
             preview.classList.add("show");
             loader.classList.remove("show");

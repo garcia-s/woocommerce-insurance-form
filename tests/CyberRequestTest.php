@@ -22,7 +22,7 @@ final class CyberRequestTest extends TestCase
     }       
 }
 
-//reputation rol  0.035
+//reputation rol  1.035
 //taper 1,78
 //
 //EL1=2076,66666

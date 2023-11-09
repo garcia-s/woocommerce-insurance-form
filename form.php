@@ -42,7 +42,7 @@ function renderForm()
             <div id="insurance_section_wrapper">
                 <?php
                 load_loss_of_key_person_form();
-                load_workplace_violence_form();
+                load_workplace_violence_form(); 
                 ?>
             </div>
             <button>Next</button>

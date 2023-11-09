@@ -19,6 +19,8 @@
   ],
   "minimum-stability": "stable",
   "require": {
-    "tecnickcom/tcpdf": "^6.6"
+    "tecnickcom/tcpdf": "^6.6",
+    "setasign/fpdf": "^1.8",
+    "setasign/fpdi": "^2.5"
   }
 }

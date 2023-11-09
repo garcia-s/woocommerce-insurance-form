@@ -26,4 +26,3 @@ $cyber_employee_factor = [
     ["rev_per_employee" => 5000000, "employee_factor" => 0.326,],
     ["rev_per_employee" => 7500000, "employee_factor" => 0.301,],
 ];
-

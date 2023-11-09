@@ -79,8 +79,8 @@ class WC_Insurance_Cyber extends IWC_Insurance_Entry
         <select name="cyber_sic_class" \>
             <option>Select an SIC Class</option>
             <?php
-            foreach ($this->reputation_class as $id => $data) {
-                echo '<option value=' . $id . '>' . $data['industry_title'] . '</option>';
+            foreach ($this->reputation_class as $id => $this->data) {
+                echo '<option value=' . $id . '>' . $this->data['industry_title'] . '</option>';
             } ?>
         </select>
 
@@ -90,8 +90,8 @@ class WC_Insurance_Cyber extends IWC_Insurance_Entry
         <select name="cyber_class_description" \>
             <option>Select class description</option>
             <?php
-            foreach ($this->cyber_factor as $id => $data) {
-                echo '<option value=' . $id . '>' . $id . ':   ' . $data['class_description'] . '</option>';
+            foreach ($this->cyber_factor as $id => $this->data) {
+                echo '<option value=' . $id . '>' . $id . ':   ' . $this->data['class_description'] . '</option>';
             } ?>
         </select>
 
@@ -99,32 +99,32 @@ class WC_Insurance_Cyber extends IWC_Insurance_Entry
 
         <div id="cyber_effective_date" class="error"></div>
         <input type="date" name="cyber_effective_date" \ />
-<?php
+    <?php
     }
 
-    function validate($data)
+    function validate()
     {
         $errors = [];
 
-        if ($this->risk_margin[intval($data["cyber_limit"])] == null)
+        if ($this->risk_margin[intval($this->data["cyber_limit"])] == null)
             $errors["cyber_limit"] = "Please select a valid limit";
         //
-        if (intval($data["cyber_projected_revenue"]) <= 1)
+        if (intval($this->data["cyber_projected_revenue"]) <= 1)
             $errors["cyber_projected_revenue"] = "Projected gross revenue cannot be 1";
 
-        if (intval($data["cyber_total_employees"]) < 2)
+        if (intval($this->data["cyber_total_employees"]) < 2)
             $errors["cyber_total_employees"] = "The employees has to be a number or a string containing a number that is greater than zero";
 
-        if ($this->reputation_class[intval($data["cyber_sic_class"])] == null)
+        if ($this->reputation_class[intval($this->data["cyber_sic_class"])] == null)
             $errors["cyber_sic_class"] = "please select a valid SIC class from the list";
 
-        if ($this->cyber_factor[intval($data["cyber_class_description"])] == null)
+        if ($this->cyber_factor[intval($this->data["cyber_class_description"])] == null)
             $errors["cyber_class_description"] = "please select a valid class description from the list";
 
-        if ($data["cyber_effective_date"] == null) {
+        if ($this->data["cyber_effective_date"] == null) {
             $errors["cyber_effective_date"] = "Please send a valid date";
         } else {
-            $effective_year = intval(date("Y", strtotime((string)$data["cyber_effective_date"])));
+            $effective_year = intval(date("Y", strtotime((string)$this->data["cyber_effective_date"])));
             $current_date = intval(date("Y"));
 
             if ($effective_year == false)
@@ -140,19 +140,19 @@ class WC_Insurance_Cyber extends IWC_Insurance_Entry
 
 
 
-    function calculatePremium($data)
+    function calculatePremium()
     {
         // 2. Look up [Risk Margin]
-        $limit = intval($data["cyber_limit"]);
+        $limit = intval($this->data["cyber_limit"]);
         $risk_margin = $this->risk_margin[$limit];
         // 3. Look up [Trend Factor], [SE Factor], and [CRF]
         // HARD CODED AS CONSTS;
         // 4. Look up Reputation Class
-        $reputation_class = $this->reputation_class[$data["cyber_sic_class"]];
+        $reputation_class = $this->reputation_class[$this->data["cyber_sic_class"]];
         // 5. Look up [Reputation ROL] (based on Reputation Class and Projected Gross revenue in millions)
         $reputation_rol_class = $this->reputation_rol[$reputation_class["reputation_class"]];
         $reputation_rol = null;
-        $projected_revenue = intval($data["cyber_projected_revenue"]);
+        $projected_revenue = intval($this->data["cyber_projected_revenue"]);
         $rol_keys = array_keys($reputation_rol_class);
 
         for ($i = 0; $i < count($rol_keys) - 1; $i++) {
@@ -180,11 +180,11 @@ class WC_Insurance_Cyber extends IWC_Insurance_Entry
         // 7. Calculate [EL 1]:
         $el1 = $reputation_rol * $reputation_taper * self::CRF * $limit;
         // 8. Look up [Cyber Factor] and ILF Risk
-        $cyber_factor = $this->cyber_factor[intval($data["cyber_class_description"])];
+        $cyber_factor = $this->cyber_factor[intval($this->data["cyber_class_description"])];
 
 
         // 9. Look up [Employee Factor] (based on Projected Gross Revenue divided by Total Employee Count.  Do not interpolate.  Select Revenue Per Employee Immediately below)
-        $revenue_per_employee = $projected_revenue / intval($data["cyber_total_employees"]);
+        $revenue_per_employee = $projected_revenue / intval($this->data["cyber_total_employees"]);
         $employee_factor = null;
 
         for ($i = 0; $i < count($this->employee_factor) - 1; $i++) {
@@ -311,7 +311,7 @@ class WC_Insurance_Cyber extends IWC_Insurance_Entry
         $base_loss_cost2 = $blc22 + $blc23 * ($blc21 / 100_000);
         $base_loss_cost3 = $blc32 + $blc33 * ($blc31 / 100_000);
 
-        $effective_year = intval(date("Y", strtotime((string)$data["cyber_effective_date"])));
+        $effective_year = intval(date("Y", strtotime((string)$this->data["cyber_effective_date"])));
         // 18. Calculate [Loss Cost 1], [Loss Cost 2], and [Loss Cost 3]:
         $loss_cost1 = $base_loss_cost1 * (self::TREND_FACTOR ** ($effective_year - 2020));
         $loss_cost2 = $base_loss_cost2 * (self::TREND_FACTOR ** ($effective_year - 2020));
@@ -326,5 +326,84 @@ class WC_Insurance_Cyber extends IWC_Insurance_Entry
         $expected_loss_with_risk = $expected_loss * $risk_margin;
 
         $this->premium = round($expected_loss_with_risk / (1 - WC_Insurance::get_variable_expense_percentage()));
+    }
+
+
+
+    function renderHTMLTable()
+    {
+    ?>
+
+        <table style="margin:10px">
+            <tbody>
+                <tr>
+                    <td align="LEFT">
+                        <strong>TYPE OF INSURANCE:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->get_name() ?>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td align="LEFT">
+                        <strong>LIMIT:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->data["cyber_limit"] . ' $' ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="LEFT">
+                        <strong>PROJECTED GROSS REVENUE:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->data["cyber_projected_revenue"] . ' $' ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="LEFT">
+                        <strong>TOTAL EMPLOYEES:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->data["cyber_total_employees"] . ' Employees' ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="LEFT">
+                        <strong>PRIMARY SIC CLASS:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->reputation_class[($this->data["cyber_sic_class"])]["industry_title"] ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="LEFT">
+                        <strong>CLAS DESCRIPTION:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->cyber_factor[($this->data["cyber_class_description"])]["class_description"] ?>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td align="LEFT">
+                        <strong>EFFECTIVE DATE:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->data["cyber_effective_date"] ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="LEFT">
+                        <strong>PREMIUM:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo  $this->premium . ' $' ?>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+<?php
     }
 }

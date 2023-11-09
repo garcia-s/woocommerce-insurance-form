@@ -52,8 +52,8 @@ class WC_Insurance_Workplace_Violence extends IWC_Insurance_Entry
         <select name="wv_sic_class" \>
             <option>Select an SIC Class</option>
             <?php
-            foreach ($this->wv_class as $id => $data) {
-                echo '<option value=' . $id . '>' . $data['industry_title'] . '</option>';
+            foreach ($this->wv_class as $id => $this->data) {
+                echo '<option value=' . $id . '>' . $this->data['industry_title'] . '</option>';
             } ?>
         </select>
         <label>Effective Date: </label>
@@ -64,23 +64,23 @@ class WC_Insurance_Workplace_Violence extends IWC_Insurance_Entry
 
         <div id="wv_total_employees" class="error"></div>
         <input type="number" name="wv_total_employees" \ />
-<?php
+    <?php
     }
 
-    function validate($data)
+    function validate()
     {
         $errors = [];
 
-        if ($this->wv_limit_factor[intval($data["wv_limit"])] == null)
+        if ($this->wv_limit_factor[intval($this->data["wv_limit"])] == null)
             $errors["wv_limit"] = "Please select a valid limit";
 
-        if ($this->wv_class[intval($data["wv_sic_class"])] == null)
+        if ($this->wv_class[intval($this->data["wv_sic_class"])] == null)
             $errors["wv_sic_class"] = "Please select a valid SIC class from the list";
 
-        if ($data["wv_effective_date"] == null) {
+        if ($this->data["wv_effective_date"] == null) {
             $errors["wv_effective_date"] = "Please send a valid date";
         } else {
-            $effective_year = date("Y", strtotime((string)$data["wv_effective_date"]));
+            $effective_year = date("Y", strtotime((string)$this->data["wv_effective_date"]));
             $current_date = intval(date("Y"));
 
             if ($effective_year == false)
@@ -88,7 +88,7 @@ class WC_Insurance_Workplace_Violence extends IWC_Insurance_Entry
             if ($effective_year < $current_date)
                 $errors["wv_effective_date"] = "Date cannot be before current date";
         }
-        $total_employees = intval($data["wv_total_employees"]);
+        $total_employees = intval($this->data["wv_total_employees"]);
 
         if ($total_employees < 1)
             $errors["wv_total_employees"] = "The employees has to be a number or a string containing a number that is greater than zero";
@@ -101,20 +101,20 @@ class WC_Insurance_Workplace_Violence extends IWC_Insurance_Entry
 
 
 
-    function calculatePremium($data)
+    function calculatePremium()
     {
         // 1. Look up [Risk Margin]
-        $risk_margin = $this->wv_risk_margin[intval($data["wv_limit"])];
+        $risk_margin = $this->wv_risk_margin[intval($this->data["wv_limit"])];
         // 2. Look up [Trend Factor], [ELR], and [Deductible Factor]
         // 3. Look up WV Class
-        $wv_class = $this->wv_class[intval($data["wv_sic_class"])]["wv_class"];
+        $wv_class = $this->wv_class[intval($this->data["wv_sic_class"])]["wv_class"];
         // 4. Look up [Hazard Factor] (based on WV Class)
         $hazard_factor = $this->wv_hazard_factor[$wv_class];
         // 5. Look up [Limit Factor]
-        $limit_factor = $this->wv_limit_factor[intval($data["wv_limit"])];
+        $limit_factor = $this->wv_limit_factor[intval($this->data["wv_limit"])];
         // 6. Look up [Base Premium].  (Based on Total Employee Count.  Interpolate between Base Premiums as needed)
         // For example, if 51 Total Employees, then Base Premium = 5,399 x (70-51) / (70-50) + 6,919 x (51-50) / (70-50)
-        $total_employees = intval($data["wv_total_employees"]);
+        $total_employees = intval($this->data["wv_total_employees"]);
 
         $base_premium = null;
         for ($i = 0; $i < count($this->wv_base_premium) - 1; $i++) {
@@ -144,7 +144,7 @@ class WC_Insurance_Workplace_Violence extends IWC_Insurance_Entry
 
         // 8. Calculate [TBP]:
         // [Base Premium] x {[Trend Factor] ^ [(Year of Policy Effective Date) - (2021)]}
-        $effective_year = intval(date("Y", strtotime((string)$data["wv_effective_date"])));
+        $effective_year = intval(date("Y", strtotime((string)$this->data["wv_effective_date"])));
         $tbp = $base_premium * ($this::TREND_FACTOR ** ($effective_year - 2021));
 
         // 9. Calculate [Expected Losses]
@@ -157,5 +157,65 @@ class WC_Insurance_Workplace_Violence extends IWC_Insurance_Entry
         $expected_loss_with_risk = $expected_loss * $risk_margin;
 
         $this->premium = round($expected_loss_with_risk / (1 - WC_Insurance::get_variable_expense_percentage()));
+    }
+
+    function renderHTMLTable()
+    {
+    ?>
+
+        <table style="margin:10px">
+            <tbody>
+                <tr>
+                    <td align="LEFT">
+                        <strong>TYPE OF INSURANCE:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->get_name() ?>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td align="LEFT">
+                        <strong>LIMIT:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->data["wv_limit"] . ' $' ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="LEFT">
+                        <strong>SIC CLASS:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->wv_class[intval($this->data["wv_sic_class"])]["industry_title"] ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="LEFT">
+                        <strong>EFFECTIVE DATE:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->data["wv_effective_date"] ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="LEFT">
+                        <strong>TOTAL EMPLOYEES:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo $this->data["wv_total_employees"] . ' Employees' ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="LEFT">
+                        <strong>PREMIUM:</strong>
+                    </td>
+                    <td align="right">
+                        <?php echo  $this->premium . ' $' ?>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+<?php
     }
 }
