@@ -15,7 +15,6 @@ class WC_Insurance_Workplace_Violence extends IWC_Insurance_Entry
     public function __construct()
     {
         require(WC_INSURANCE_DIR . 'data/wv_data.php');
-
         $this->wv_class = &$wv_class;
         $this->wv_hazard_factor = &$wv_hazard_factor;
         $this->wv_risk_margin = &$wv_risk_margin;
@@ -121,7 +120,7 @@ class WC_Insurance_Workplace_Violence extends IWC_Insurance_Entry
             //$i +1 high
             if (
                 $total_employees === $this->wv_base_premium[$i]["max"] ||
-                ($i === 0 && $total_employees < $this->wv_base_premium[$i]["max"])
+                ($i === 0 && $total_employees <= $this->wv_base_premium[$i]["max"])
             ) {
                 $base_premium = $this->wv_base_premium[$i]["premium"];
                 break;
@@ -145,17 +144,14 @@ class WC_Insurance_Workplace_Violence extends IWC_Insurance_Entry
         // 8. Calculate [TBP]:
         // [Base Premium] x {[Trend Factor] ^ [(Year of Policy Effective Date) - (2021)]}
         $effective_year = intval(date("Y", strtotime((string)$this->data["wv_effective_date"])));
-        $tbp = $base_premium * ($this::TREND_FACTOR ** ($effective_year - 2021));
-
+        $tbp = $base_premium * ($this::TREND_FACTOR ** ($effective_year - 2020));
         // 9. Calculate [Expected Losses]
         // [TBP] x [Limit Factor] x [Deductible Factor] x [ELR] x [Hazard Factor]
         $expected_loss = $tbp * $limit_factor * $this::DEDUCTIBLE_FACTOR * $this::EXPECTED_LOSS_RATIO * $hazard_factor;
-
         // [Expected Losses] x [Risk Margin]
 
         // 10. Calculate [Expected Losses w/Risk Margin]
         $expected_loss_with_risk = $expected_loss * $risk_margin;
-
         $this->premium = round($expected_loss_with_risk / (1 - WC_Insurance::get_variable_expense_percentage()));
     }
 

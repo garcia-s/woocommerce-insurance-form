@@ -10,7 +10,7 @@
   box-sizing: border-box;
   padding: 30px;
 }
-#insurance_content_wrapper button {
+#insurance_content_wrapper .insurance_button {
   padding: 1rem;
   font-size: 1.2rem;
   font-weight: 600;
@@ -169,12 +169,11 @@
   flex-direction: row;
 }
 
-#insurance_preview_amount {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #69f969;
-  font-size: 3em;
+#insurance_preview_frame {
+  height: 70vh;
+  width: 100%;
+  border: 2px solid #c7c7c7;
+  border-radius: 0.4em;
 }
 
 .show {

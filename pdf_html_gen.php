@@ -48,10 +48,10 @@ function generate_pdf($data, $insurance)
                 </tr>
                 <tr>
                     <td align="LEFT">
-                        <strong>FAX NUMBER:</strong>
+                        <strong>PROMO CODE:</strong>
                     </td>
                     <td align="right">
-                        <?php echo $data["fax"] ?>
+                        <?php echo $data["promo_code"] ?>
                     </td>
                 </tr>
             </tbody>

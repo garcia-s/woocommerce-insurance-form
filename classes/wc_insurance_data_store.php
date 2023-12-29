@@ -42,7 +42,7 @@ class WC_Insurance_Data_Store extends WC_Data_Store_WP
 
     public function read_meta(&$data)
     {
-        throw new Exception("You cannot ---- in this data store");
+        return array();
     }
 
     public function update_meta(&$object, $meta)

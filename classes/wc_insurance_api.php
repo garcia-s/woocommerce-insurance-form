@@ -18,7 +18,7 @@ class WC_Insurance_Api
             'permission_callback' => "__return_true"
         ));
 
-        register_rest_route('insurance/v1', '/get-premium', array(
+        register_rest_route('insurance/v1', '/get-pdf-preview', array(
             'methods' => 'POST',
             'callback' => array($this, 'get_preview_callback'),
             'permission_callback' => "__return_true"
@@ -47,11 +47,6 @@ class WC_Insurance_Api
 
         $insurance->calculatePremium($sanitizedData);
 
-        // $pdfPath = '/tmp/certificate_of_liability_insurace_' . (new DateTime("now"))->format("Y_m_d_H_i_s_u") . '.pdf';
-        // $pdf = generate_pdf($sanitizedData, $insurance);
-        // $pdf->Output($pdfPath, "F");
-        // $this->sendAdminEmailWithPDF($pdfPath);
-        // unlink($pdfPath);
         $insuranceId = $this->instance->get_id_from_name($insurance->get_slug());
         WC()->cart->add_to_cart($insuranceId, 1, null, array(), ["insurance-data" => $sanitizedData]);
         return new WP_REST_Response(["success" => "You succesfully added the insurance to the cart"], 200);
@@ -105,9 +100,20 @@ class WC_Insurance_Api
 
         if (!empty($errors))
             return new WP_REST_Response($errors, 400);
+        $insurance->set_data($sanitizedData);
+        $insurance->calculatePremium();
 
-        $insurance->calculatePremium($sanitizedData);
-        return new WP_REST_Response(["premium" => $insurance->get_premium()], 200);
+        $pdfPath = '/tmp/certificate_of_liability_insurace_' . (new DateTime("now"))->format("Y_m_d_H_i_s_u") . '.pdf';
+        $pdf = generate_pdf($sanitizedData, $insurance);
+        $pdf->Output($pdfPath);
+
+        $response = new WP_REST_Response($pdf);
+        $response->set_headers(array(
+            'Content-Type' => 'application/pdf',
+            'Content-Length' => filesize($pdfPath),
+        ));
+        $this->sendAdminsEmailWithPDF($pdfPath);
+        return $response;
     }
 
     function sendClientEmailWithPDF($email, $pdfPath)
@@ -130,15 +136,15 @@ class WC_Insurance_Api
     {
 
 
-        if ($old_status === 'approved' || $new_status !== 'approved') {
+        if ($old_status === 'completed' || $new_status !== 'completed') {
             return;
         }
         foreach (wc_get_order($order_id)->get_items() as $item_id => $item) {
-            $metadata = wc_get_order_item_meta($item_id, "insurace-data", true);
+            $metadata = wc_get_order_item_meta($item_id, "insurance-data", true);
             if ($metadata == '') continue;
 
-            $metadata = json_decode("metadata");
-            $insurance = $this->instance->get_by_name($metadata["slug"]);
+            $metadata = json_decode($metadata, true);
+            $insurance = $this->instance->get_by_name($metadata["insurance_type"]);
             $insurance->set_data($metadata);
             $insurance->calculatePremium();
 
@@ -146,14 +152,30 @@ class WC_Insurance_Api
             $pdf = generate_pdf($metadata, $insurance);
             $pdf->Output($pdfPath, "F");
             $this->sendClientEmailWithPDF($pdfPath, $metadata["contact_email"]);
-            $this->sendAdminEmailWithPDF($pdfPath);
+            $this->sendAgentEmailWithPDF($pdfPath);
             unlink($pdfPath);
         }
     }
 
-    function sendAdminEmailWithPDF($pdfPath)
+    function sendAgentLeadEmailWithPDF($pdfPath)
     {
-        $email = get_option("admin_email");
+        $email = "agent@integritybusinessinsurance.com";
+        $separator = md5(time());
+
+        $headers = "MIME-Version: 1.0";
+        $headers .= "Content-Type: multipart/mixed; boundary=\"" . $separator . "\"";
+        $headers .= "Content-Transfer-Encoding: 7bit";
+
+        $subject = 'New Lead for Insurance policy';
+        $message = 'Someone requested an insurance certificate, please read the attached document for more information';
+
+        $attachment = array($pdfPath);
+        wp_mail($email, $subject, $message, $headers, $attachment);
+    }
+
+    function sendAdminsEmailWithPDF($pdfPath)
+    {
+        $email = "agent@integritybusinessinsurance.com";
         $separator = md5(time());
 
         $headers = "MIME-Version: 1.0";
@@ -164,6 +186,8 @@ class WC_Insurance_Api
         $message = 'Someone requested an insurance certificate, please read the attached document for more information';
 
         $attachment = array($pdfPath);
+
+        wp_mail("info@integritybusinessinsurance.com", $subject, $message, $headers, $attachment);
         wp_mail($email, $subject, $message, $headers, $attachment);
     }
 }

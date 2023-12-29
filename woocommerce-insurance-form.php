@@ -10,7 +10,6 @@
  * License: [License]
  **/
 
-
 define('WC_INSURANCE_DIR', plugin_dir_path(__FILE__));
 define('INSURANCE_URL', plugin_dir_url(__FILE__));
 
@@ -21,7 +20,6 @@ define("CYBER", 'cyber');
 
 
 require_once(WC_INSURANCE_DIR . 'helpers.php');
-require_once(WC_INSURANCE_DIR . 'tcpdf_config.php');
 require_once(WC_INSURANCE_DIR . 'autoload.php');
 
 require_once(WC_INSURANCE_DIR . 'vendor/autoload.php');

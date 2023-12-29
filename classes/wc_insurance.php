@@ -18,8 +18,9 @@ class WC_Insurance
         add_filter("woocommerce_product_class", array($this, "add_woocommerce_class_for_product"), 10, 2);
         add_filter("woocommerce_product_type_query", array($this, "change_product_type"), 10, 2);
         add_action('wp_loaded', array($this, 'conditionally_load_cart'), 5);
-        add_action('woocommerce_new_order', array($this, 'custom_insert_data_into_order'), 10, 1);
+        add_action('woocommerce_checkout_create_order_line_item', array($this, 'custom_insert_data_into_order'), 10, 4);
         add_filter("woocommerce_order_item_get_formatted_meta_data", array($this, "unset_specific_order_item_meta_data"), 10, 2);
+        add_action('woocommerce_before_order_notes', array($this, 'add_order_disclaimer'));
     }
 
     public static function get(): WC_Insurance
@@ -79,16 +80,22 @@ class WC_Insurance
             <span id="insurance_loader" class="show"></span>
             <form id="insurance_form">
                 <div class="contact_information_section">
+                    <p> This is an exclusive service for companies affiliated to the BBB we invite you to visit if you are not yet an affiliate
+                        <a href="https://www.bbb.org/get-listed">https://www.bbb.org/get-listed</a>
+                    </p>
                     <h5>CONTACT INFORMATION</h5>
                     <label>Contact Name </label>
                     <div id="contact_name" class="error"></div>
                     <input placeholder="ie. John Doe" type="text" name="contact_name" />
                     <label>Phone</label>
                     <div id="contact_phone" class="error"></div>
-                    <input type="tel" placeholder="800-5550175" name="contact_phone" pattern="[0-9]{3}-[0-9]{7}" />
+                    <input type="tel" placeholder="8005550175" name="contact_phone" pattern="[0-9]{10}" />
                     <label>Email</label>
                     <div id="contact_email" class="error"></div>
                     <input placeholder="ie. johndoe@example.com" type="email" name="contact_email" />
+                    <label>Promotional Code</label>
+                    <div id="promo_code" class="error"></div>
+                    <input placeholder="PR0MOC0D3" type="text" name="promo_code" />
                 </div>
                 <div class="contact_information_section">
                     <h5>BUSINESS INFORMATION</h5>
@@ -121,29 +128,28 @@ class WC_Insurance
                     }
                     ?>
                 </div>
-                <button class="send">NEXT</button>
+                <button class="insurance_button send">NEXT</button>
+
             </form>
             <div id="insurance_preview_wrapper">
-
-                <div class="insurance_preview_text">The Premium for your insurance is</div>
-                <div id="insurance_preview_amount"></div>
+                <iframe id="insurance_preview_frame"></iframe>
                 <div class="preview_button_wrapper">
-                    <button id="go_back" class="back">
+                    <button class="insurance_button back" id="go_back">
                         Go back
                     </button>
-                    <button id="send_insurance" class="send">
-                        Add to Cart
+                    <button class="insurance_button send" id="send_insurance">
+                        Add to cart
                     </button>
                 </div>
             </div>
             <div id="insurance_completed">
                 <img src="<?php echo (INSURANCE_URL . "./assets/icons/checkmark.svg"); ?>" </div>
-                <p> Your insurance policy has been added to the cart, you can now <a href="<?php echo get_permalink() ?>">click here to buy another policy</a> or
-                    <a href="/">click here to return to the home page</a>
-                </p>
+                <p> Your insurance policy has been added to the cart, you can now </p>
+                <a class="insurance_button" href="<?php echo wc_get_cart_url() ?>">Go to payment</a>
+                <a class="insurance_button" href="<?php echo get_permalink() ?>">Buy another policy</a>
+                <a class="insurance_button" href="/">Go to home page</a>
             </div>
     <?php
-
         return ob_get_clean();
     }
 
@@ -234,30 +240,13 @@ class WC_Insurance
     }
 
 
-    function custom_insert_data_into_order($order_id)
+    function custom_insert_data_into_order($item, $cart_item_key, $values, $order)
     {
-        // Get the order object
-        $order = wc_get_order($order_id);
-
-        // Loop through the cart items
-        foreach (WC()->cart->get_cart() as $cart_item) {
-
-            // You can access cart item data
-            $product_id = $cart_item['product_id'];
-
-            // Add the custom data to the order item
-            $product = wc_get_product($product_id);
-            $item = $order->add_product($product, $cart_item['quantity']);
-            if ($cart_item["insurance-data"] != null) {
-                wc_add_order_item_meta($item, "insurance-data", json_encode($cart_item["insurance-data"]), false);
-            }
+        $cart_item = WC()->cart->get_cart_item($cart_item_key);
+        if ($cart_item["insurance-data"] != null) {
+            $item->add_meta_data("insurance-data", json_encode($cart_item["insurance-data"]), false);
         }
-
-        // Calculate order totals (if needed)
-        $order->calculate_totals();
-
-        // Save the order
-        $order->save();
+        $item->save();
     }
 
 
@@ -269,5 +258,10 @@ class WC_Insurance
                 unset($formatted_meta[$key]);
         }
         return $formatted_meta;
+    }
+
+    function add_order_disclaimer()
+    {
+        echo '<p> Your order has been received a note that says please check your spam email if you do not receive a copy of your order details in your inbox.</p>';
     }
 }
